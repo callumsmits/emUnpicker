@@ -24,8 +24,7 @@ SEED = 66478  # Set to None for random seed.
 BATCH_SIZE = 64
 
 
-tf.app.flags.DEFINE_string("train_output", 'model.ckpt', "File to save training data")
-tf.app.flags.DEFINE_string("eval_file", '_autopick.star', "File to unpick")
+tf.app.flags.DEFINE_string("train_output", 'model.ckpt', "File with training data")
 tf.app.flags.DEFINE_string("eval_root", '_autopick.star', "File suffix for star files to unpick")
 tf.app.flags.DEFINE_string("output_root", '_autopick_unpick.star', "File suffix for unpicked star files")
 tf.app.flags.DEFINE_integer("boxsize", 200, "Boxsize to use when extracting particles")
