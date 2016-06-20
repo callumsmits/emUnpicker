@@ -7,7 +7,7 @@ These scripts automate unpicking incorrect picks in electron micrographs after a
 - [SciPy](https://www.scipy.org/scipylib/index.html)
 - [PIL](http://www.pythonware.com/products/pil/)
 
-Just clone this repository and check that the script trainingSetFromStarFiles.py is exectutable.
+Just clone this repository and check that the script trainingSetFromStarFiles.py is exectutable. TensorFlow will use a GPU if present in the system and this greatly speeds up training.
 
 ##Usage
 The scripts can be run with or without ctf correction. In practice, operating without CTF correction is just as accurate and runs quicker.
@@ -138,6 +138,68 @@ optional arguments:
   --resized_box RESIZED_BOX
                         Resize boxsize used for training
 ```
-To unpick the dataset, run the unpicker_eval.py script with the output from training and the same image processing parameters. Changing any image processing parameters will invalidate the training data!
+To unpick the dataset, run the unpicker_eval.py script with the output from training and the same image processing parameters. Changing any image processing parameters will invalidate the training data! Any checkpoint file can be used for unpicking - if the lowest validation error was not the final output, unpicking can proceed with the best trained network.
 
+Example:
+```
+$ python /em/Scripts/emUnpicker/unpicker_eval.py --train_output unpickModel.out-11700 --eval_root _autopick.star --output_root _autopick_unpick.star --boxsize 250 --sigma_contrast 5 --num_cores 6
+I tensorflow/core/common_runtime/local_device.cc:25] Local device intra op parallelism threads: 6
+I tensorflow/core/common_runtime/local_session.cc:45] Local session inter op parallelism threads: 6
+Initialized!
+Calculating unpicks...
+Processing image 1/1322 FoilHole_6082357_Data_6077042_6077043_20151106_2002.mrc
+Eval Particles: 16
+Loaded data, calculating unpicks
+Saved FoilHole_6082357_Data_6077042_6077043_20151106_2002_autopick_unpick.star with 3/16(18.8%)
+Processing image 2/1322 FoilHole_6082358_Data_6077042_6077043_20151106_2003.mrc
+Eval Particles: 25
+Loaded data, calculating unpicks
+Saved FoilHole_6082358_Data_6077042_6077043_20151106_2003_autopick_unpick.star with 2/25(8.0%)
+Processing image 3/1322 FoilHole_6082359_Data_6077042_6077043_20151106_2005.mrc
+Eval Particles: 28
+Loaded data, calculating unpicks
+Saved FoilHole_6082359_Data_6077042_6077043_20151106_2005_autopick_unpick.star with 2/28(7.1%)
+Processing image 4/1322 FoilHole_6082361_Data_6077042_6077043_20151106_2006.mrc
+Eval Particles: 46
+Loaded data, calculating unpicks
+Saved FoilHole_6082361_Data_6077042_6077043_20151106_2006_autopick_unpick.star with 5/46(10.9%)
+Processing image 5/1322 FoilHole_6082362_Data_6077042_6077043_20151106_2008.mrc
+Eval Particles: 50
+Loaded data, calculating unpicks
+Saved FoilHole_6082362_Data_6077042_6077043_20151106_2008_autopick_unpick.star with 8/50(16.0%)
+Processing image 6/1322 FoilHole_6082363_Data_6077042_6077043_20151106_2009.mrc
+Eval Particles: 17
+Loaded data, calculating unpicks
+Saved FoilHole_6082363_Data_6077042_6077043_20151106_2009_autopick_unpick.star with 3/17(17.6%)
+Processing image 7/1322 FoilHole_6082364_Data_6077042_6077043_20151106_2011.mrc
+Eval Particles: 47
+Loaded data, calculating unpicks
+Saved FoilHole_6082364_Data_6077042_6077043_20151106_2011_autopick_unpick.star with 14/47(29.8%)
+Processing image 8/1322 FoilHole_6082372_Data_6077042_6077043_20151106_2022.mrc
+Eval Particles: 39
+Loaded data, calculating unpicks
+Saved FoilHole_6082372_Data_6077042_6077043_20151106_2022_autopick_unpick.star with 4/39(10.3%)
+Processing image 9/1322 FoilHole_6082373_Data_6077042_6077043_20151106_2024.mrc
+Eval Particles: 12
+Loaded data, calculating unpicks
+Saved FoilHole_6082373_Data_6077042_6077043_20151106_2024_autopick_unpick.star with 2/12(16.7%)
+Processing image 10/1322 FoilHole_6082374_Data_6077042_6077043_20151106_2028.mrc
+Eval Particles: 36
+Loaded data, calculating unpicks
+Saved FoilHole_6082374_Data_6077042_6077043_20151106_2028_autopick_unpick.star with 3/36(8.3%)
+Processing image 11/1322 FoilHole_6082374_Data_6084536_6084537_20151106_2028.mrc
+Eval Particles: 59
+Loaded data, calculating unpicks
+Saved FoilHole_6082374_Data_6084536_6084537_20151106_2028_autopick_unpick.star with 6/59(10.2%)
+Processing image 12/1322 FoilHole_6082375_Data_6077042_6077043_20151106_2030.mrc
+Eval Particles: 105
+Loaded data, calculating unpicks
+Saved FoilHole_6082375_Data_6077042_6077043_20151106_2030_autopick_unpick.star with 24/105(22.9%)
+Processing image 13/1322 FoilHole_6082375_Data_6084536_6084537_20151106_2031.mrc
+Eval Particles: 211
+Loaded data, calculating unpicks
+Saved FoilHole_6082375_Data_6084536_6084537_20151106_2031_autopick_unpick.star with 59/211(28.0%)
 ...
+```
+
+The unpicker_eval.py script finds all star files with the indicated suffix in the current directory. The micrograph for each star file is loaded and all boxes are evaluated by the network. Those that are scored as particles are saved to the output star file.
