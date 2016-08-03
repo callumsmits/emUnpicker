@@ -35,6 +35,9 @@ tf.app.flags.DEFINE_float("highpass", 0.0, "Highpass filter resolution to apply"
 tf.app.flags.DEFINE_float("gaussian_sigma", 0.0, "Gaussian filter sigma to apply")
 tf.app.flags.DEFINE_integer("num_cores", 4, "Number of cores to use")
 tf.app.flags.DEFINE_integer("resized_box", 32, "Resize boxsize used for training")
+tf.app.flags.DEFINE_string("eval_star_dir", os.getcwd() + '/', "Directory containing star files to unpick")
+tf.app.flags.DEFINE_string("image_dir", os.getcwd() + '/', "Directory containing micrographs")
+tf.app.flags.DEFINE_string("output_star_dir", os.getcwd() + '/', "Directory to save unpicked star files")
 FLAGS = tf.app.flags.FLAGS
 
 
@@ -163,12 +166,12 @@ def load_data(file_suffix, boxsize, image_size, sigma_contrast, num_images, apix
     else:
         return image_array
 
-def load_single_image_data(file_root, file_suffix, boxsize, image_size, sigma_contrast, apix, lowpass_filter, highpass_filter, gaussian_filter):
+def load_single_image_data(file_root, file_suffix, star_file_dir, image_file_dir, boxsize, image_size, sigma_contrast, apix, lowpass_filter, highpass_filter, gaussian_filter):
     image_array = 0
     image_num = 0
     scale_factor = float(image_size / boxsize)
-    f = file_root + file_suffix
-    MRC_file_name = file_root + '.mrc'
+    f = star_file_dir + file_root + file_suffix
+    MRC_file_name = image_file_dir + file_root + '.mrc'
     mrc_image = mrc.mrc()
     mrc_image.readFromFile(MRC_file_name)
     if lowpass_filter > 0:
@@ -215,9 +218,9 @@ def save_data(file_suffix, out_file_suffix, predictions):
         with open(out_file_name, 'w') as out:
             out.write(output_string)
 
-def save_single_image_data(file_root, file_suffix, out_file_suffix, predictions):
+def save_single_image_data(file_root, input_file, file_suffix, out_file_suffix, predictions):
     image_num = 0
-    f = file_root + file_suffix
+    f = input_file + file_suffix
     output_string = ''
     out_file_name = file_root + out_file_suffix
     particles = 0
@@ -335,16 +338,18 @@ def main(argv=None):  # pylint: disable=unused-argument
     print('Calculating unpicks...')
 
     # Now unpick the image...
-    allFiles = [ f for f in os.listdir(os.getcwd()) if f.endswith(FLAGS.eval_root) ]
+    allFiles = [ f for f in os.listdir(FLAGS.eval_star_dir) if f.endswith(FLAGS.eval_root) ]
     image_num = 0
     for f in allFiles:
         root_file_name = f[0:f.find(FLAGS.eval_root)]
+        input_file_name = FLAGS.eval_star_dir + root_file_name
+        output_file_name = FLAGS.output_star_dir + root_file_name
         image_num += 1
         print('Processing image %d/%d '%(image_num, len(allFiles)) + root_file_name + '.mrc')
-        eval_particle_count = count_single_image_particle_totals(root_file_name + FLAGS.eval_root)
+        eval_particle_count = count_single_image_particle_totals(input_file_name + FLAGS.eval_root)
         print('Eval Particles: ' + str(eval_particle_count))
 
-        test_data = load_single_image_data(root_file_name, FLAGS.eval_root, FLAGS.boxsize, image_size, FLAGS.sigma_contrast, FLAGS.apix, FLAGS.lowpass, FLAGS.highpass, FLAGS.gaussian_sigma)
+        test_data = load_single_image_data(root_file_name, FLAGS.eval_root, FLAGS.eval_star_dir, FLAGS.image_dir, FLAGS.boxsize, image_size, FLAGS.sigma_contrast, FLAGS.apix, FLAGS.lowpass, FLAGS.highpass, FLAGS.gaussian_sigma)
 
         test_data_node = tf.constant(test_data)
 
@@ -353,7 +358,7 @@ def main(argv=None):  # pylint: disable=unused-argument
         test_prediction = tf.nn.softmax(model(test_data_node))
 
         predictions = test_prediction.eval()
-        save_single_image_data(root_file_name, FLAGS.eval_root, FLAGS.output_root, predictions)
+        save_single_image_data(output_file_name, input_file_name, FLAGS.eval_root, FLAGS.output_root, predictions)
 
 
 

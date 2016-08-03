@@ -34,6 +34,9 @@ tf.app.flags.DEFINE_float("gaussian_sigma", 0.0, "Gaussian filter sigma to apply
 tf.app.flags.DEFINE_integer("num_cores", 4, "Number of cores to use")
 tf.app.flags.DEFINE_integer("num_epochs", 15, "Number of epochs for training")
 tf.app.flags.DEFINE_integer("resized_box", 32, "Resize boxsize used for training")
+tf.app.flags.DEFINE_string("eval_star_dir", os.getcwd(), "Directory containing star files to unpick")
+tf.app.flags.DEFINE_string("image_dir", os.getcwd(), "Directory containing micrographs")
+tf.app.flags.DEFINE_string("output_star_dir", os.getcwd(), "Directory to save unpicked star files")
 FLAGS = tf.app.flags.FLAGS
 
 
