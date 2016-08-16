@@ -94,7 +94,7 @@ def count_single_image_particle_totals(filename, training_data = 0):
     else:
         return particle_count
 
-def load_data(file_suffix, boxsize, image_size, sigma_contrast, num_images, apix, lowpass_filter, highpass_filter, gaussian_filter,  with_labels=0):
+def load_data(file_root, file_suffix, boxsize, image_size, sigma_contrast, num_images, apix, lowpass_filter, highpass_filter, gaussian_filter,  with_labels=0):
     image_array = 0
     if with_labels:
         labels_array = numpy.ndarray(shape=num_images*4, dtype=numpy.uint8)
@@ -104,7 +104,7 @@ def load_data(file_suffix, boxsize, image_size, sigma_contrast, num_images, apix
     for f in allFiles:
 #        if image_num < 32:
 #            print('Processing %s'%f)
-        MRC_file_name = f[0:f.find(file_suffix)] + '.mrc'
+        MRC_file_name = file_root + f[0:f.find(file_suffix)] + '.mrc'
         mrc_image = mrc.mrc()
         mrc_image.readFromFile(MRC_file_name)
         if lowpass_filter > 0:
@@ -258,7 +258,7 @@ def main(argv=None):  # pylint: disable=unused-argument
   particle_count, non_particle_count = count_particle_totals(FLAGS.train_root, training_data=1)
   print('Training Particles: ' + str(particle_count) + ' Non-particles: ' + str(non_particle_count) + ' in training set')
     
-  train_data, train_labels = load_data(FLAGS.train_root, FLAGS.boxsize, image_size, FLAGS.sigma_contrast, particle_count + non_particle_count, FLAGS.apix, FLAGS.lowpass, FLAGS.highpass, FLAGS.gaussian_sigma, with_labels = 1)
+  train_data, train_labels = load_data(FLAGS.image_dir, FLAGS.train_root, FLAGS.boxsize, image_size, FLAGS.sigma_contrast, particle_count + non_particle_count, FLAGS.apix, FLAGS.lowpass, FLAGS.highpass, FLAGS.gaussian_sigma, with_labels = 1)
     
   # save_images(train_data, train_labels, image_size, 32)
 
